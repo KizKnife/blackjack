@@ -1,72 +1,127 @@
 package com.pluralsight;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class MainApp {
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
 
+        // create deck
         Deck deck = new Deck();
-        Hand hand1 = new Hand();
-        Hand hand2 = new Hand();
 
         // shuffle
         deck.shuffle();
 
-        // deal 2 cards to player 1
-        for(int i = 0; i < 2; i++) {
-            // get a card from the deck
-            Card card = deck.deal();
+        // create player list
+        ArrayList<Player> playerArrayList = new ArrayList<>();
 
-            // deal that card to the hand
-            hand1.deal(card);
+        System.out.println("Welcome to Blackjack!");
+        System.out.println();
+
+        // player enter
+        while (true) {
+            System.out.print("How many players: ");
+            int players = input.nextInt();
+
+            if (players > 0) {
+                for (int i = 1; i <= players; i++) {
+                    playerArrayList.add(new Player("Player " + i));
+                }
+                break;
+            } else {
+                System.out.println("Invalid input!");
+            }
         }
 
-        int hand1Value = hand1.getValue();
+        System.out.println(playerArrayList.size() + " player(s) have joined the game!");
 
-        System.out.println("Player 1's hand is worth " + hand1Value);
-
-        // deal 2 cards to player 2
-        for(int i = 0; i < 2; i++) {
-            // get a card from the deck
-            Card card = deck.deal();
-
-            // deal that card to the hand
-            hand2.deal(card);
+        // player names
+        input.nextLine();
+        for (Player player : playerArrayList) {
+            System.out.print("Enter player name: ");
+            String name = input.nextLine();
+            player.setName(name);
         }
 
-        int hand2Value = hand2.getValue();
+        // deal 2 cards to each player
+        for (Player player : playerArrayList) {
+            player.getHand().deal(deck.deal());
+            player.getHand().deal(deck.deal());
 
-        System.out.println("Player 2's hand is worth " + hand2Value);
+            int handValue = player.getHand().getValue();
+
+            System.out.println(
+                    player.getName() + "'s hand is worth " + handValue + "!"
+            );
+        }
+
+        // dealer first deal
+        Player dealer = new Player("Dealer");
+        dealer.getHand().deal(deck.deal());
+        int dealerHandValue = dealer.getHand().getValue();
+        System.out.println(
+                dealer.getName() + "'s hand is worth " + dealerHandValue + "!"
+        );
 
         System.out.println();
 
-        if (hand1Value <= 21 && hand1Value > hand2Value) {
-            System.out.println("Player 1 wins!");
-        } else if (hand1Value == hand2Value) {
-            System.out.println("Tie!");
-        } else if (hand2Value <= 21) {
-            System.out.println("Player 2 wins!");
+        // deal cards to each player
+        for (Player player : playerArrayList) {
+            int handValue = player.getHand().getValue();
+
+            System.out.println(
+                    player.getName() + "'s hand is worth " + handValue + "!"
+            );
+
+            while (true) {
+                if (handValue > 21) {
+                    System.out.println(
+                            player.getName() + " has lost the game!"
+                    );
+                    return;
+                }
+
+                System.out.print("Hit (Y/N): ");
+                String choice = input.nextLine();
+
+                if (choice.equalsIgnoreCase("y")) {
+                    player.getHand().deal(deck.deal());
+
+                    handValue = player.getHand().getValue();
+
+                    System.out.println(
+                            player.getName() + "'s hand is worth " + handValue + "!"
+                    );
+                } else if (choice.equalsIgnoreCase("n")) {
+                    System.out.println(player.getName() + " stays!");
+                    break;
+                } else {
+                    System.out.println("Invalid input!");
+                }
+            }
         }
 
-//        while (true) {
-//            int handValue = hand1.getValue();
-//            System.out.println("This hand is worth " + handValue);
-//
-//            if (handValue > 21) {
-//                System.out.println("You lose!");
-//                return;
-//            } else if (handValue <= 21) {
-//                System.out.printf("Hit (Y/N): ");
-//                String choice = input.nextLine();
-//
-//                if (choice.equalsIgnoreCase("y")) {
-//                    Card card = deck.deal();
-//                    hand1.deal(card);
-//                } else {
-//                    return;
-//                }
-//            }
-//        }
+        // dealer final deal
+        dealer.getHand().deal(deck.deal());
+        dealerHandValue = dealer.getHand().getValue();
+        System.out.println(
+                "Dealer's hand is worth " + dealer.getHand().getValue() + "!"
+        );
+
+        for (Player player : playerArrayList) {
+            int handValue = player.getHand().getValue();
+
+            if (!player.isBust()) {
+                while (dealer.getHand().getValue() < 21) {
+                    dealer.getHand().deal(deck.deal());
+                }
+            }
+            dealer.getHand().getValue();
+
+            System.out.println(
+                    "Dealer's hand is worth " + dealerHandValue + "!"
+            );
+        }
     }
 }
